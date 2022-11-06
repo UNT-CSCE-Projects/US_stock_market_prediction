@@ -13,7 +13,7 @@ export const donutChartOptions: Options = {
   plotOptions: {
     pie: {
       innerSize: '99%',
-      borderWidth: 20,
+      borderWidth: 10,
       borderColor: '',
       slicedOffset: 10,
       dataLabels: {
@@ -25,7 +25,7 @@ export const donutChartOptions: Options = {
   title: {
     verticalAlign: 'middle',
     floating: true,
-    text: 'Patient health',
+    text: '',
   },
 
   legend: {

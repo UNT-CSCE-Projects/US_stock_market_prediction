@@ -1,7 +1,29 @@
-.container {
-  display: grid;
-  padding: 10px;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 500px));
-  grid-gap: 10px;
-margin-top: 10px;
+.container{
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-evenly;
+    font-size: 5px;
+}
+
+.pie{
+
+    height: 250px;
+    width: 350px;
+    border-radius: 5px;
+    box-shadow: 10px 10px 5px #aaaaaa;
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.line{
+    height: 250px;
+    width: 350px;
+    border-radius: 5px;
+    box-shadow: 10px 10px 5px #aaaaaa;
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 10px;
 }
