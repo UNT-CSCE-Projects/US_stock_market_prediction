@@ -25,7 +25,7 @@ export const donutChartOptions: Options = {
   title: {
     verticalAlign: 'middle',
     floating: true,
-    text: 'Test',
+    text: 'Lab test',
   },
 
   legend: {

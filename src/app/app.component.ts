@@ -19,7 +19,7 @@ export class AppComponent {
       type: 'line'
     },
     title: {
-      text: 'Linechart'
+      text: 'Patient Health Status'
     },
     credits: {
       enabled: false
