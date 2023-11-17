@@ -9,26 +9,61 @@ import { donutChartOptions } from './helpers/donutChartOptions';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'Angular-Charts';
+  lineChart: any; // Define your Plotly chart type
+  chartOptions: any; // Define your CanvasJS chart options
+  graph1 : any
+  showDonutChart = true;
+  showLineChart = false;
+  showCanvasJSChart = false;
+  showPlotlyGraph = false;
 
-  donutCharts = new Chart(donutChartOptions);
-  areaCharts = new Chart(areaChartOptions)
+  constructor() {
+    // Initialize your charts here
 
-  lineChart = new Chart({
-    chart: {
-      type: 'line'
-    },
-    title: {
-      text: 'Patient Health Status'
-    },
-    credits: {
-      enabled: false
-    },
-    series: [
-      {
-        name: 'Patient Health',
-        data: [10, 2, 3,6,9,17,20,10,5,2,16]
-      } as any
-    ]
-  });
+    // Donut Chart
+    
+    // Line Chart (Plotly)
+    this.lineChart = {
+      data: [
+        {
+          x: [1, 2, 3, 4, 5],
+          y: [10, 2, 3, 6, 9],
+          type: 'scatter',
+          mode: 'lines',
+          name: 'Sample Line',
+        },
+      ],
+      layout: {
+        title: 'Line Chart',
+      },
+    };
+
+    // CanvasJS Chart
+    this.chartOptions = {
+      title: {
+        text: 'CanvasJS Chart',
+      },
+      data: [
+        {
+          type: 'column',
+          dataPoints: [
+            { label: 'Apple', y: 10 },
+            { label: 'Banana', y: 15 },
+            { label: 'Orange', y: 25 },
+          ],
+        },
+      ],
+    };
+
+    // Plotly Graph
+    this.graph1 = {
+      data: [
+        { x: [1, 2, 3], y: [2, 3, 4], type: 'bar' },
+      ],
+      layout: {title: 'Some Data to Hover Over'}
+    };
+    
+  }
+
+
 }
