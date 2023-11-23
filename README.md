@@ -19,11 +19,11 @@ source venv/bin/activate
 ```
 2. Now install flask:
 ```
-pip install flask
+pip3 install flask
 ```
 3. install all dependencies
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 4. To run the code, run the following code:
 ```
