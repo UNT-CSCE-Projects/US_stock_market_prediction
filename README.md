@@ -21,7 +21,11 @@ source venv/bin/activate
 ```
 pip install flask
 ```
-3. To run the code, run the following code:
+3. install all dependencies
+```
+pip install -r requirements.txt
+```
+4. To run the code, run the following code:
 ```
 FLASK_ENV=development flask run
 ```
