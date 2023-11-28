@@ -2,12 +2,15 @@
 import logoImage from "../../assets/images/download.jpeg";
 import PlotGraph from '../plot/PlotGraph';
 import React, { useState } from 'react';
+import axios from 'axios';
 
 
   
 
 export default function HeaderSect() {
   const [stockId, setStockId] = useState('');
+  const [algorithm, setAlgorithm] = useState(2); // Replace with your actual algorithm
+  const [predictions, setPredictions] = useState([])
 
   const handleStockIdChange = (e) => {
     setStockId(e.target.value);
@@ -20,8 +23,35 @@ export default function HeaderSect() {
   };
 
   const fetchDataFromAl1 = (e)=>{
+    setAlgorithm(e);
+    fetchPredictions();
     console.log(e,' loading')
   }
+
+
+  const fetchPredictions = async () => {
+    try {
+      const data = {
+        stock_id: stockId,
+        algorithm: algorithm,
+      };
+      const response = await axios.get('http://localhost:3000/data', { params: data });
+      if (response.status === 200) {
+        const predictionsData = response.data;
+        const predictions = predictionsData.map((prediction) => ({
+          id: prediction.id,
+          value: prediction.value,
+        }));
+        setPredictions(predictions);
+      } else {
+        console.error('Error sending data:', response.error);
+      }
+    } catch (error) {
+      console.error('Error sending data:', error);
+    }
+  };
+  
+  
   return (
     <div>
       <nav className="relative py-3 custom-nav bg-blue-500 text-white">
@@ -69,9 +99,9 @@ export default function HeaderSect() {
       </div>
      
       <div className="algobar ">
-        <button className="section bg-blue-500 text-white " onClick={()=>fetchDataFromAl1(stockId)}>Algorithm 1</button>
-        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(stockId)}>Algorithm 2</button>
-        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(stockId)}>Algorithm 3</button>
+        <button className="section bg-blue-500 text-white " onClick={()=>fetchDataFromAl1(1)}>Algorithm 1</button>
+        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(2)}>Algorithm 2</button>
+        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(3)}>Algorithm 3</button>
       </div>
 
       <div className='algobar' >
