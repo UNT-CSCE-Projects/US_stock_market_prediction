@@ -24,7 +24,7 @@ export default function HeaderSect() {
   }
   return (
     <div>
-      <nav className="relative py-3 custom-nav bg-blue-500 text-white">
+      <nav className="relative py-3 custom-nav text-white">
         <div className="container mx-auto">
           <div className="flex items-center justify-between">
             <img
