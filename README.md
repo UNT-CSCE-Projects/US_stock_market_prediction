@@ -35,4 +35,18 @@ Your model can contribute to the consolidation of signals from the auction and o
 | 16 | time_id                | For a particular stock, time_id maintains continuous value to track time through all days.                                           |
 | 17 | row_id                 | Unique id to identify each row.                                                                                                      |
 
+## Solution Approach
+
+## ML Models
+
+## Acheivements
+
+## Contributors
+
+1. Farhan Ar Rafi - Developer - [LinkedIn](https://www.linkedin.com/in/farhanarrafi/)
+2. Avijeet Shil - Developer - [LinkedIn](https://www.linkedin.com/in/avijeetshil/)
+3. Naga Sai Sivani Tutika - Project Manger + Developer - [LinkedIn](https://www.linkedin.com/in/sivani-tutika/)
+4. Abdul Azeem Mohammed - Developer - [LinkedIn](https://www.linkedin.com/in/mohammed-abdul-azeem-184084202/)
+5. Mohd Abdul Quavi Latifi - Developer - [LinkedIn](https://www.linkedin.com/in/mohd-abdul-quavi-latifi-046508188/)
+
 
