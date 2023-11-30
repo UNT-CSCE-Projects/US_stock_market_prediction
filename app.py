@@ -18,12 +18,12 @@ model = load_model("lstm.h5")
 def home_get():
     return render_template('index.html')
 
-@app.post('/')
+@app.get('/data')
 def get_data():
     stock_id = request.args.get('stock_id')
     algorithm = request.args.get('algorithm')
 
-    return render_template('index.html', response = {run_model(stock_id, algorithm)})
+    return run_model(stock_id, algorithm)
 
 
 # @app.post('/')
@@ -70,8 +70,19 @@ def run_model(stock_id, algorithm):
 
         test_predict = scaler.inverse_transform(test_predict)
 
-        return jsonify({'training': train.to_dict(orient='records'),
-                        'testing': test_predict.tolist()}), 200
+        train_target_values = train[start:end].diff().dropna()['target'].tolist()
+
+        
+        test_values = [item[0] for item in test_predict.tolist()]
+
+        response_data = {
+            'training': train_target_values,
+            'testing': test_values
+        }
+
+        
+        response_json = jsonify(response_data)
+        return response_json, 200
     else:
         return jsonify({'error': 'Invalid stock_id'}), 400
     # dataFrameWithPCA = runPCA(dataFrame)
