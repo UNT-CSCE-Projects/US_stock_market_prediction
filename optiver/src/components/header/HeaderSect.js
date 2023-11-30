@@ -1,7 +1,7 @@
 
 import logoImage from "../../assets/images/download.jpeg";
 import PlotGraph from '../plot/PlotGraph';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import axios from 'axios';
 
 
@@ -9,8 +9,8 @@ import axios from 'axios';
 
 export default function HeaderSect() {
   const [stockId, setStockId] = useState('');
-  const [algorithm, setAlgorithm] = useState(2); // Replace with your actual algorithm
-  const [predictions, setPredictions] = useState([])
+  const [algorithm, setAlgorithm] = useState(0); // Replace with your actual algorithm
+  const [data, setData] = useState([])
 
   const handleStockIdChange = (e) => {
     setStockId(e.target.value);
@@ -24,30 +24,28 @@ export default function HeaderSect() {
 
   const fetchDataFromAl1 = (e)=>{
     setAlgorithm(e);
-    fetchPredictions();
-    console.log(e,' loading')
+    
   }
+  useEffect(() => {
+    // Use useEffect to trigger data fetching when the algorithm changes
+    if (algorithm !== 0) {
+      fetchData();
+    }
+  }, [ algorithm]);
 
-
-  const fetchPredictions = async () => {
+  const fetchData = async () => {
     try {
-      const data = {
-        stock_id: stockId,
-        algorithm: algorithm,
-      };
-      const response = await axios.get('http://localhost:3000/data', { params: data });
-      if (response.status === 200) {
-        const predictionsData = response.data;
-        const predictions = predictionsData.map((prediction) => ({
-          id: prediction.id,
-          value: prediction.value,
-        }));
-        setPredictions(predictions);
-      } else {
-        console.error('Error sending data:', response.error);
+      // Make your fetch request here, using the algorithm state
+      const response = await fetch(`http://127.0.0.1:5000/data?stock_id=142&algorithm=${algorithm}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
+      const result = await response.json();
+      console.log('training ',result['training'])
+      console.log('testing ',result['testing'])
+      setData(result);
     } catch (error) {
-      console.error('Error sending data:', error);
+      console.error('Error fetching data:', error);
     }
   };
   
@@ -107,6 +105,7 @@ export default function HeaderSect() {
       <div className='algobar' >
         <PlotGraph/>
       </div>
+      
     </div>
   );
 }
