@@ -1,60 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import Plot from 'react-plotly.js';
 
-const PlotGraph = () => {
+const PlotGraph = ({train, test}) => {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
-    // Fetch data from the provided URL
-    fetch('https://raw.githubusercontent.com/plotly/datasets/master/finance-charts-apple.csv')
-      .then((response) => response.text())
-      .then((data) => {
-        const rows = data.split('\n').map(row => row.split(','));
-        const keys = rows[0];
-        const stockData = rows.slice(1).map(row => {
-          const rowData = {};
-          keys.forEach((key, index) => {
-            rowData[key] = row[index];
-          });
-          return rowData;
-        });
+    // Assuming you need some processing for chartData based on train and test
+    // You may need to adjust this part based on your data structure
+    const trainDates = Array.from({ length: train.length }, (_, index) => index + 1);
+    const testDates = Array.from({ length: test.length }, (_, index) => index  + train.length);
 
-        setChartData(stockData);
-      });
-  }, []);
+    const trace1 = {
+      type: 'scatter',
+      mode: 'lines',
+      name: 'Training Data',
+      x: trainDates,
+      y: train,
+      line: { color: '#17BECF' },
+    };
+
+    const trace2 = {
+      type: 'scatter',
+      mode: 'lines',
+      name: 'Testing Data',
+      x: testDates,
+      y: test,
+      line: { color: '#FF5733' }, // You can change this color as needed
+    };
+
+    setChartData([trace1, trace2]);
+  }, [train, test]);
 
   if (chartData.length === 0) {
     return <div>Loading...</div>;
   }
 
-  // Function to unpack data
-  const unpack = (rows, key) => rows.map(row => row[key]);
-
-  // Create traces
-  const trace1 = {
-    type: 'scatter',
-    mode: 'lines',
-    name: 'AAPL High',
-    x: unpack(chartData, 'Date'),
-    y: unpack(chartData, 'AAPL.High'),
-    line: { color: '#17BECF' }
-  };
-
-  // const trace2 = {
-  //   type: 'scatter',
-  //   mode: 'lines',
-  //   name: 'AAPL Low',
-  //   x: unpack(chartData, 'Date'),
-  //   y: unpack(chartData, 'AAPL.Low'),
-  //   line: { color: '#7F7F7F' }
-  // };
-
-  const data = [trace1];
-
-
   return (
     <div>
-      <Plot data={data} />
+      <Plot data={chartData} />
     </div>
   );
 };

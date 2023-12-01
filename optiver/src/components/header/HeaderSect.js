@@ -9,17 +9,20 @@ import axios from 'axios';
 
 export default function HeaderSect() {
   const [stockId, setStockId] = useState('');
+  const [day, setDay] = useState('');
   const [algorithm, setAlgorithm] = useState(0); // Replace with your actual algorithm
-  const [data, setData] = useState([])
-
+  const [train, setTrain] = useState([])
+  const [test, setTest] = useState([])
+  const [error, setError] = useState(false)
   const handleStockIdChange = (e) => {
     setStockId(e.target.value);
+    setAlgorithm(0)
+    setDay('')
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    // You can handle the search logic here
-    console.log('Stock ID submitted:', stockId);
+  const handleDayChange = (e) => {
+    setDay(e.target.value);
+    setAlgorithm(0)
   };
 
   const fetchDataFromAl1 = (e)=>{
@@ -27,24 +30,29 @@ export default function HeaderSect() {
     
   }
   useEffect(() => {
-    // Use useEffect to trigger data fetching when the algorithm changes
     if (algorithm !== 0) {
       fetchData();
     }
   }, [ algorithm]);
-
   const fetchData = async () => {
     try {
-      // Make your fetch request here, using the algorithm state
-      const response = await fetch(`http://127.0.0.1:5000/data?stock_id=142&algorithm=${algorithm}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const result = await response.json();
-      console.log('training ',result['training'])
-      console.log('testing ',result['testing'])
-      setData(result);
+        const response = await fetch(`http://127.0.0.1:5000/data?stock_id=${stockId}&day=${day}&algorithm=${algorithm}`);
+        if (response.status===200) {
+          const result = await response.json();
+          
+          setTrain(result['training']);
+          setTest(result['testing'])
+          //console.log('train ', train)
+          //console.log('test ', test)
+          setError('')
+        } else{
+          const result = await response.json();
+          setError(result['error'])
+        }
+        
+      
     } catch (error) {
+      setError(error['error'])
       console.error('Error fetching data:', error);
     }
   };
@@ -78,22 +86,34 @@ export default function HeaderSect() {
         marginTop: '10px'
       }}
     >
-        <form onSubmit={handleSearchSubmit} className="flex items-center space-x-2" >
-              <div className="w-40">Stock Number </div>
+        <form  className="flex items-center space-x-2" >
+        
+          <div className="w-40">Stock Number </div>
+                <input
+                  type="number"
+                  placeholder="Enter Stock ID"
+                  value={stockId}
+                  onChange={handleStockIdChange}
+                  max={29}
+                  min={0}
+                  required
+                  className="px-2 py-1 border border-gray-300 rounded"
+                />
+              <div className="w-40">Day </div>
               <input
                 type="number"
-                placeholder="Enter Stock ID"
-                value={stockId}
-                onChange={handleStockIdChange}
-                max={200}
-                min={0}
+                placeholder="Enter Day"
+                value={day}
+                onChange={handleDayChange}
+                max={480}
+                min={1}
                 required
                 className="px-2 py-1 border border-gray-300 rounded"
               />
-              <button type="submit" className="bg-white text-blue-500 px-2 py-1 rounded hover:bg-gray-100 focus:outline-none">
-                Set
-              </button>
             </form>
+
+
+      
       </div>
      
       <div className="algobar ">
@@ -102,9 +122,12 @@ export default function HeaderSect() {
         <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(3)}>Algorithm 3</button>
       </div>
 
-      <div className='algobar' >
-        <PlotGraph/>
-      </div>
+      <div className='algobar'>
+  {algorithm > 0 && train.length > 0 && test.length > 0 && <PlotGraph train={train} test={test} />}
+
+  {error!='' &&  <span>{error}</span>}
+    </div>
+
       
     </div>
   );
