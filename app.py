@@ -21,9 +21,10 @@ def home_get():
 @app.get('/data')
 def get_data():
     stock_id = request.args.get('stock_id')
+    day = request.args.get('day')
     algorithm = request.args.get('algorithm')
 
-    return run_model(stock_id, algorithm)
+    return run_model(stock_id, day, algorithm)
 
 
 # @app.post('/')
@@ -33,11 +34,11 @@ def get_data():
 #     }
 #     return render_template('index.html', response = {run_model(testData)})
 
-def getDataFrame(stock_id):
+def getDataFrame(stock_id,day):
     df = pd.read_csv('shortlisted.csv')
-    df_updated = df[df['stock_id']==int(stock_id)]
+    df_updated = df[(df['stock_id']==int(stock_id)) & (df['date_id']==int(day))]
     train = df_updated.filter(['time_id', 'target'])
-    
+    train['time_id'] = train['time_id'] - train['time_id'].min()
     train = train.set_index('time_id')
     print(df_updated)
     return train
@@ -51,15 +52,17 @@ def create_sequences(dataset, look_back=1):
     return np.array(data_X), np.array(data_Y)
 
 
-def run_model(stock_id, algorithm):
-    if stock_id is not None:
-        train = getDataFrame(stock_id)
+def run_model(stock_id, day, algorithm):
+    if (stock_id is not None) and (day is not None ):
+        
+        day = int(day)-1
+        if(day<0):
+            return jsonify({'error': 'Invalid stock_id or day should be greater than 1'}), 400
+        train = getDataFrame(stock_id,day)
         scaler = MinMaxScaler(feature_range=(0, 1))
         start, end = 0, 55
         scaled_data = scaler.fit_transform(train[start:end].diff().dropna())
-
         train_data, test_data = scaled_data[start:49, :], scaled_data[45:end, :]
-
         look_back = 3
         test_X, _ = create_sequences(test_data, look_back)
 
@@ -84,7 +87,7 @@ def run_model(stock_id, algorithm):
         response_json = jsonify(response_data)
         return response_json, 200
     else:
-        return jsonify({'error': 'Invalid stock_id'}), 400
+        return jsonify({'error': 'Invalid stock_id or day should be greater than 1'}), 400
     # dataFrameWithPCA = runPCA(dataFrame)
     # pickel_file = 'trained_model.pkl'
     # with open(pickel_file, 'rb'):
