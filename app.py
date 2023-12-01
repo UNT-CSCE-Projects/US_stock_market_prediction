@@ -2,7 +2,7 @@ import os
 import pickle
 from flask import Flask, render_template, request, send_from_directory, jsonify
 from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn.decomposition import PCA
 import numpy as np # linear algebra
@@ -31,13 +31,7 @@ def get_data():
     day = request.args.get('day')
     algorithm = int(request.args.get('algorithm'))
     
-
-    if algorithm == 1 or algorithm == 3:
-        return run_model(stock_id, day, algorithm)
-    if algorithm == 2:
-        return run_ARIMA(stock_id, day)
-    else:
-        return jsonify({'error': 'Sorry!! We do not have that yet!!'}), 400
+    return run_model(stock_id, day, algorithm)
 
 
 # @app.post('/')
@@ -54,6 +48,15 @@ def getDataFrame(stock_id,day):
     train['time_id'] = train['time_id'] - train['time_id'].min()
     train = train.set_index('time_id')
 
+    return train
+
+def getDataFrameForSVR(stock_id,day):
+    df = pd.read_csv('shortlisted.csv')
+    df_updated = df[(df['stock_id']==int(stock_id)) & (df['date_id']==int(day))]
+
+    # Remove all unrelated columns
+    train = df_updated.filter(['time_id', 'target'])
+    train['time_id'] = train['time_id'] - train['time_id'].min()
     return train
 
 def create_sequences(dataset, look_back=1):
@@ -75,31 +78,31 @@ def run_model(stock_id, day, algorithm):
         if day < 0 :
             return jsonify({'error': 'Invalid stock_id or day should be greater than 1'}), 400
         
-        train = getDataFrame(stock_id,day)
-        if len(train) == 0 :
-            return jsonify({'error': 'No stock data found'}), 400
         
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        start, end = 0, 55
-        scaled_data = scaler.fit_transform(train[start:end].diff().dropna())
-        train_data, test_data = scaled_data[start:49, :], scaled_data[45:end, :]
-        look_back = 3
-        test_X, test_Y = create_sequences(test_data, look_back)
-
-        test_X_reshaped = np.reshape(test_X, (test_X.shape[0], 1, test_X.shape[1]))
+        
+        train_target_values = None
+        test_values = None
+        
         model = None
         if algorithm == 1:
             model = load_model("lstm.h5")
-        else:
-            model = None
-            pickel_file_name = 'svr_poly.pkl'
-            with open(pickel_file_name, 'rb') as pickle_file:
-                model = pickle.load(pickle_file)
-                #setattr(model, 'verbosity', 3)
-                #app.logger.info("printing model info")
-                #app.logger.info(type(pickel_model))
-        
-        if model:
+
+            if not model:
+                return jsonify({'error': 'LSTM Model creation failed!'}), 400
+            
+            train = getDataFrame(stock_id,day)
+            if len(train) == 0 :
+                return jsonify({'error': 'No stock data found'}), 400
+
+            scaler = MinMaxScaler(feature_range=(0, 1))
+            start, end = 0, 55
+            scaled_data = scaler.fit_transform(train[start:end].diff().dropna())
+            train_data, test_data = scaled_data[start:49, :], scaled_data[45:end, :]
+            look_back = 3
+            test_X, test_Y = create_sequences(test_data, look_back)
+
+            test_X_reshaped = np.reshape(test_X, (test_X.shape[0], 1, test_X.shape[1]))
+
             test_predict = model.predict(test_X_reshaped)
             test_predict = scaler.inverse_transform(test_predict)
             test_Y_actual_flat = test_Y.flatten()
@@ -115,18 +118,68 @@ def run_model(stock_id, day, algorithm):
                 'testing': test_values,
                 'mae' : mae
             }
+
+            response_json = jsonify(response_data)
+            return response_json, 200
+
+        elif algorithm == 3:
+            pickel_file_name = 'svr_poly_1.pkl'
+            with open(pickel_file_name, 'rb') as pickle_file:
+                model = pickle.load(pickle_file)
+
+            if not model:
+                return jsonify({'error': 'SVR Model creation failed!'}), 400
+            
+            train = getDataFrameForSVR(stock_id,day)
+            if len(train) == 0 :
+                return jsonify({'error': 'No stock data found'}), 400
+
+            start, end = 0, 55
+            #app.logger.info("train data:")
+            #app.logger.info(train)
+
+            test_X = train[45:end]
+            y_test = train[45:end]
+
+            test_X.reset_index()
+
+            #app.logger.info("test_X data:")
+            #app.logger.info(test_X)
+
+            #app.logger.info("y_test data:")
+            #app.logger.info(y_test)
+
+            scaler = StandardScaler()
+            test_scaled = scaler.fit_transform(test_X)
+
+            test_X_reshaped = test_scaled.reshape(-1, 1)
+
+            test_predict = model.predict(test_X_reshaped)
+            train_target_values = train[start:end].diff().dropna()['target'].tolist()
+            test_values = test_predict.tolist()
+
+            app.logger.info("y_test data:")
+            app.logger.info(y_test)
+
+            app.logger.info("test_predict data:")
+            app.logger.info(test_predict)
+
+            #mae = mean_absolute_error(y_test, test_predict)
+
+            response_data = {
+                'training': train_target_values,
+                'testing': test_values,
+                'mae' : 0
+            }
         
             response_json = jsonify(response_data)
             return response_json, 200
+        elif algorithm == 2:
+            return run_ARIMA(stock_id,day)
         else:
             return jsonify({'error': 'OOPS!! We do not have this one ready yet!!'}), 400
     else:
         return jsonify({'error': 'Invalid Input!! Stock number or Day should be equal to or greater than 1'}), 400
-    # dataFrameWithPCA = runPCA(dataFrame)
-    # pickel_file = 'trained_model.pkl'
-    # with open(pickel_file, 'rb'):
-    #     pickel_model = pickle.load(pickel_file)
-    #     return pickel_model.predict(dataFrameWithPCA)
 
 
 def run_ARIMA(stock_id :int, day:int):

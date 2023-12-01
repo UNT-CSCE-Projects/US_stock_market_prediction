@@ -32,6 +32,7 @@ FLASK_ENV=development flask run
 
 
 To update requirements file after lib install, run:
+
 ```
 python3 -m pip freeze > requirements.txt
 ```
@@ -39,8 +40,9 @@ python3 -m pip freeze > requirements.txt
 
 
 
-## References:
-1. https://realpython.com/flask-by-example-part-1-project-setup/
-2. https://realpython.com/flask-by-example-integrating-flask-and-angularjs/
-3. https://github.com/shea256/angular-flask
+## References
+
+1. [Flask Project Similar](https://realpython.com/flask-by-example-part-1-project-setup/)
+2. [Integrating Flask and Angular JS](https://realpython.com/flask-by-example-integrating-flask-and-angularjs/)
+3. [Angular Flask Github shea256](https://github.com/shea256/angular-flask)
 4. [How to save and load your Scikit-learn models in a minute - AnalyticsVidya](https://medium.com/analytics-vidhya/save-and-load-your-scikit-learn-models-in-a-minute-21c91a961e9b)
