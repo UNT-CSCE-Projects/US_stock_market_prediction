@@ -17,6 +17,3 @@ six
 threadpoolctl 
 tzdata 
 Werkzeug 
-tensorflow
-axios
-flask_cors
