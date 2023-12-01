@@ -32,7 +32,8 @@ FLASK_ENV=development flask run
 
 
 To update requirements file after lib install, run:
-```python3 -m pip freeze > requirements.txt
+```
+python3 -m pip freeze > requirements.txt
 ```
 
 
