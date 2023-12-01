@@ -130,46 +130,30 @@ def run_model(stock_id, day, algorithm):
             if not model:
                 return jsonify({'error': 'SVR Model creation failed!'}), 400
             
-            train = getDataFrameForSVR(stock_id,day)
+            train = getDataFrame(stock_id,day)
             if len(train) == 0 :
                 return jsonify({'error': 'No stock data found'}), 400
 
             start, end = 0, 55
-            #app.logger.info("train data:")
-            #app.logger.info(train)
-
-            test_X = train[45:end]
-            y_test = train[45:end]
-
-            test_X.reset_index()
-
-            #app.logger.info("test_X data:")
-            #app.logger.info(test_X)
-
-            #app.logger.info("y_test data:")
-            #app.logger.info(y_test)
-
+            
             scaler = StandardScaler()
-            test_scaled = scaler.fit_transform(test_X)
+            scaled_data = scaler.fit_transform(train[start:end].diff().dropna())
+            train_data, test_data = scaled_data[start:45, :], scaled_data[45:end, :]
 
-            test_X_reshaped = test_scaled.reshape(-1, 1)
+            test_X_reshaped = test_data.reshape(-1, 1)
 
             test_predict = model.predict(test_X_reshaped)
+
             train_target_values = train[start:end].diff().dropna()['target'].tolist()
+
             test_values = test_predict.tolist()
 
-            app.logger.info("y_test data:")
-            app.logger.info(y_test)
-
-            app.logger.info("test_predict data:")
-            app.logger.info(test_predict)
-
-            #mae = mean_absolute_error(y_test, test_predict)
+            mae = mean_absolute_error(test_data, test_predict)
 
             response_data = {
                 'training': train_target_values,
                 'testing': test_values,
-                'mae' : 0
+                'mae' : mae
             }
         
             response_json = jsonify(response_data)
