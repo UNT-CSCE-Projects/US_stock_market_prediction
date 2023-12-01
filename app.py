@@ -3,18 +3,24 @@ import pickle
 from flask import Flask, render_template, request, send_from_directory, jsonify
 from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam
 from sklearn.preprocessing import MinMaxScaler
-import pandas as pd
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn.decomposition import PCA
-import numpy as np
+import numpy as np # linear algebra
 from keras.models import load_model
 from sklearn.metrics import mean_absolute_error
 from flask_cors import CORS
+
+from statsmodels.tsa.arima.model import ARIMA
+
+
 app = Flask(__name__)
 CORS(app)
+
+
 #env_config = os.getenv('APP_SETTINGS', 'config.DevelopmentConfig')
 #app.config.from_object(env_config)
 #secret_key = app.config.get('SECRET_KEY')
-model = load_model("lstm.h5")
+
 @app.get('/')
 def home_get():
     return render_template('index.html')
@@ -23,9 +29,15 @@ def home_get():
 def get_data():
     stock_id = request.args.get('stock_id')
     day = request.args.get('day')
-    algorithm = request.args.get('algorithm')
+    algorithm = int(request.args.get('algorithm'))
+    
 
-    return run_model(stock_id, day, algorithm)
+    if algorithm == 1 or algorithm == 3:
+        return run_model(stock_id, day, algorithm)
+    if algorithm == 2:
+        return run_ARIMA(stock_id, day)
+    else:
+        return jsonify({'error': 'Sorry!! We do not have that yet!!'}), 400
 
 
 # @app.post('/')
@@ -54,15 +66,19 @@ def create_sequences(dataset, look_back=1):
 
 
 def run_model(stock_id, day, algorithm):
-    if (stock_id is not None) and (day is not None ):
-        day = int(day)-1
-        if(day<0):
+    """
+    
+    
+    """
+    if stock_id and day:
+        day = int(day) -1
+        if day < 0 :
             return jsonify({'error': 'Invalid stock_id or day should be greater than 1'}), 400
         
         train = getDataFrame(stock_id,day)
         if len(train) == 0 :
             return jsonify({'error': 'No stock data found'}), 400
-        # lstm code starts here
+        
         scaler = MinMaxScaler(feature_range=(0, 1))
         start, end = 0, 55
         scaled_data = scaler.fit_transform(train[start:end].diff().dropna())
@@ -71,33 +87,41 @@ def run_model(stock_id, day, algorithm):
         test_X, test_Y = create_sequences(test_data, look_back)
 
         test_X_reshaped = np.reshape(test_X, (test_X.shape[0], 1, test_X.shape[1]))
-
-        test_predict = model.predict(test_X_reshaped)
-
-
-        test_predict = scaler.inverse_transform(test_predict)
-        test_Y_actual_flat = test_Y.flatten()
-        test_predict_actual_flat = test_predict.flatten()
-
-        mae = mean_absolute_error(test_Y_actual_flat, test_predict_actual_flat)
-        # lstm code starts here
-        train_target_values = train[start:end].diff().dropna()['target'].tolist()
-
+        model = None
+        if algorithm == 1:
+            model = load_model("lstm.h5")
+        else:
+            model = None
+            pickel_file_name = 'svr_poly.pkl'
+            with open(pickel_file_name, 'rb') as pickle_file:
+                model = pickle.load(pickle_file)
+                #setattr(model, 'verbosity', 3)
+                #app.logger.info("printing model info")
+                #app.logger.info(type(pickel_model))
         
-        test_values = [item[0] for item in test_predict.tolist()]
+        if model:
+            test_predict = model.predict(test_X_reshaped)
+            test_predict = scaler.inverse_transform(test_predict)
+            test_Y_actual_flat = test_Y.flatten()
+            test_predict_actual_flat = test_predict.flatten()
 
+            mae = mean_absolute_error(test_Y_actual_flat, test_predict_actual_flat)
+            
+            train_target_values = train[start:end].diff().dropna()['target'].tolist()
+            test_values = [item[0] for item in test_predict.tolist()]
 
-        response_data = {
-            'training': train_target_values,
-            'testing': test_values,
-            'mae' : mae
-        }
-
+            response_data = {
+                'training': train_target_values,
+                'testing': test_values,
+                'mae' : mae
+            }
         
-        response_json = jsonify(response_data)
-        return response_json, 200
+            response_json = jsonify(response_data)
+            return response_json, 200
+        else:
+            return jsonify({'error': 'OOPS!! We do not have this one ready yet!!'}), 400
     else:
-        return jsonify({'error': 'Invalid stock_id or day should be greater than 1'}), 400
+        return jsonify({'error': 'Invalid Input!! Stock number or Day should be equal to or greater than 1'}), 400
     # dataFrameWithPCA = runPCA(dataFrame)
     # pickel_file = 'trained_model.pkl'
     # with open(pickel_file, 'rb'):
@@ -105,6 +129,55 @@ def run_model(stock_id, day, algorithm):
     #     return pickel_model.predict(dataFrameWithPCA)
 
 
+def run_ARIMA(stock_id :int, day:int):
+    """
+
+    """
+    if not (stock_id and day):
+        return jsonify({'error': 'Invalid Input!! Stock number or Day should be equal to or greater than 1'}), 400
+    
+    stock_id = int(stock_id)
+    day = int(day)
+
+    train = getDataFrame(stock_id,day)
+    if len(train) == 0 :
+            return jsonify({'error': 'No stock data found'}), 400
+    
+    #app.logger.info("train data:")
+    #app.logger.info(train)
+
+    # try:
+
+    start = 0
+    end = len(train)
+
+    arma_diff1 = ARIMA(train[start:end-4].diff(), order=(3, 0, 3)).fit()
+    forecast = arma_diff1.predict(end-4, end-1, dynamic=True)
+    test = train[start:end]
+    # mse = ((forecast.to_frame().predicted_mean - test.target) ** 2).mean()
+    mae = (forecast.to_frame().predicted_mean - test.target).abs().mean()
+
+    # app.logger.info("train data:")
+    # app.logger.info(type(test))
+    # app.logger.info("forecast type:")
+    # app.logger.info(type(forecast))
+    # app.logger.info("forecast data:")
+    # app.logger.info(forecast.to_frame().predicted_mean)
+
+    response_data = {
+            'training': test['target'].tolist(),
+            'testing': forecast.to_frame().predicted_mean.tolist(),
+            'mae' : mae
+        }
+    
+    response_json = jsonify(response_data)
+    return response_json, 200
+
+    # except:
+    #     return jsonify({'error': 'ARIMA is not working!!'}), 400
+
+
+    
 
 # special file handlers and error handlers
 @app.route('/favicon.ico')
