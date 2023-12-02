@@ -1,10 +1,8 @@
 import os
 import pickle
 from flask import Flask, render_template, request, send_from_directory, jsonify
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-from sklearn.decomposition import PCA
 import numpy as np # linear algebra
 from keras.models import load_model
 from sklearn.metrics import mean_absolute_error
@@ -30,14 +28,14 @@ def get_data():
     stock_id = request.args.get('stock_id')
     day = request.args.get('day')
     algorithm = int(request.args.get('algorithm'))
-    
+
     return run_model(stock_id, day, algorithm)
 
 
 # @app.post('/')
 # def home_post():
 #     testData = {
-        
+
 #     }
 #     return render_template('index.html', response = {run_model(testData)})
 
@@ -70,26 +68,26 @@ def create_sequences(dataset, look_back=1):
 
 def run_model(stock_id, day, algorithm):
     """
-    
-    
+
+
     """
     if stock_id and day:
         day = int(day) -1
         if day < 0 :
             return jsonify({'error': 'Invalid stock_id or day should be greater than 1'}), 400
-        
-        
-        
+
+
+
         train_target_values = None
         test_values = None
-        
+
         model = None
         if algorithm == 1:
             model = load_model("lstm.h5")
 
             if not model:
                 return jsonify({'error': 'LSTM Model creation failed!'}), 400
-            
+
             train = getDataFrame(stock_id,day)
             if len(train) == 0 :
                 return jsonify({'error': 'No stock data found'}), 400
@@ -109,7 +107,7 @@ def run_model(stock_id, day, algorithm):
             test_predict_actual_flat = test_predict.flatten()
 
             mae = mean_absolute_error(test_Y_actual_flat, test_predict_actual_flat)
-            
+
             train_target_values = train[start:49].diff().dropna()['target'].tolist()
             test_values = [item[0] for item in test_predict.tolist()]
 
@@ -129,13 +127,13 @@ def run_model(stock_id, day, algorithm):
 
             if not model:
                 return jsonify({'error': 'SVR Model creation failed!'}), 400
-            
+
             train = getDataFrame(stock_id,day)
             if len(train) == 0 :
                 return jsonify({'error': 'No stock data found'}), 400
 
             start, end = 0, 55
-            
+
             scaler = StandardScaler()
             scaled_data = scaler.fit_transform(train[start:end].diff().dropna())
             train_data, test_data = scaled_data[start:45, :], scaled_data[45:end, :]
@@ -155,7 +153,7 @@ def run_model(stock_id, day, algorithm):
                 'testing': test_values,
                 'mae' : mae
             }
-        
+
             response_json = jsonify(response_data)
             return response_json, 200
         elif algorithm == 2:
@@ -170,17 +168,16 @@ def run_ARIMA(stock_id :int, day:int):
     """
 
     """
-
     if not (stock_id and day):
         return jsonify({'error': 'Invalid Input!! Stock number or Day should be equal to or greater than 1'}), 400
-    
+
     stock_id = int(stock_id)
     day = int(day)
 
     train = getDataFrame(stock_id,day)
     if len(train) == 0 :
             return jsonify({'error': 'No stock data found'}), 400
-    
+
     #app.logger.info("train data:")
     #app.logger.info(train)
 
@@ -210,7 +207,7 @@ def run_ARIMA(stock_id :int, day:int):
 
     mae = mean_absolute_error(test_data, forecast)
 
-    
+
     # app.logger.info("forecast data:")
     # app.logger.info(forecast.to_frame().predicted_mean)
 
@@ -219,7 +216,7 @@ def run_ARIMA(stock_id :int, day:int):
             'testing': forecast.to_frame().predicted_mean.tolist(),
             'mae' : mae
         }
-    
+
     response_json = jsonify(response_data)
     return response_json, 200
 
@@ -227,7 +224,7 @@ def run_ARIMA(stock_id :int, day:int):
     #     return jsonify({'error': 'ARIMA is not working!!'}), 400
 
 
-    
+
 
 # special file handlers and error handlers
 @app.route('/favicon.ico')
