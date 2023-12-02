@@ -128,7 +128,7 @@ export default function HeaderSect() {
       <div className="algobar ">
         <button className="section bg-blue-500 text-white " onClick={()=>fetchDataFromAl1(1)}>LSTM</button>
         <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(2)}>ARIMA</button>
-        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(3)}>SVM</button>
+        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(3)}>ARMA</button>
       </div>
 
       
