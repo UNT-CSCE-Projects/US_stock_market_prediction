@@ -1,7 +1,6 @@
 import os
 import pickle
 from flask import Flask, render_template, request, send_from_directory, jsonify
-from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 from sklearn.decomposition import PCA
