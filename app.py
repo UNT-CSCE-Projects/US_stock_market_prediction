@@ -148,12 +148,12 @@ def run_model(stock_id, day, algorithm):
 
             test_values = test_predict.tolist()
 
-            #mae = mean_absolute_error(y_test, test_predict)
+            mae = mean_absolute_error(y_test, test_predict)
 
             response_data = {
                 'training': train_target_values,
                 'testing': test_values,
-                'mae' : 0
+                'mae' : mae
             }
         
             response_json = jsonify(response_data)
@@ -187,7 +187,7 @@ def run_ARIMA(stock_id :int, day:int):
 
     start = 0
     end = len(train)
-    split = 50
+    split = 45
 
     train = train.diff().dropna()
 
