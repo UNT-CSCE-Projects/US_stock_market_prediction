@@ -110,7 +110,7 @@ def run_model(stock_id, day, algorithm):
 
             mae = mean_absolute_error(test_Y_actual_flat, test_predict_actual_flat)
             
-            train_target_values = train[start:end].diff().dropna()['target'].tolist()
+            train_target_values = train[start:49].diff().dropna()['target'].tolist()
             test_values = [item[0] for item in test_predict.tolist()]
 
             response_data = {
@@ -144,16 +144,16 @@ def run_model(stock_id, day, algorithm):
 
             test_predict = model.predict(test_X_reshaped)
 
-            train_target_values = train[start:end].diff().dropna()['target'].tolist()
+            train_target_values = train[start:45].diff().dropna()['target'].tolist()
 
             test_values = test_predict.tolist()
 
-            mae = mean_absolute_error(test_data, test_predict)
+            #mae = mean_absolute_error(y_test, test_predict)
 
             response_data = {
                 'training': train_target_values,
                 'testing': test_values,
-                'mae' : mae
+                'mae' : 0
             }
         
             response_json = jsonify(response_data)
