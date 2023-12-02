@@ -2,7 +2,7 @@
 import logoImage from "../../assets/images/download.jpeg";
 import PlotGraph from '../plot/PlotGraph';
 import React, { useState,useEffect } from 'react';
-import axios from 'axios';
+
 
 
   
@@ -13,16 +13,19 @@ export default function HeaderSect() {
   const [algorithm, setAlgorithm] = useState(0); // Replace with your actual algorithm
   const [train, setTrain] = useState([])
   const [test, setTest] = useState([])
+  const [mae, setMAE] = useState('')
   const [error, setError] = useState(false)
   const handleStockIdChange = (e) => {
     setStockId(e.target.value);
     setAlgorithm(0)
     setDay('')
+    setMAE('')
   };
 
   const handleDayChange = (e) => {
     setDay(e.target.value);
     setAlgorithm(0)
+    setMAE('')
   };
 
   const fetchDataFromAl1 = (e)=>{
@@ -44,16 +47,22 @@ export default function HeaderSect() {
           setTest(result['testing'])
           //console.log('train ', train)
           //console.log('test ', test)
+          setMAE(result['mae'])
           setError('')
         } else{
           const result = await response.json();
           setError(result['error'])
+          setTrain([])
+          setMAE('')
+          setTest([])
         }
         
       
     } catch (error) {
-      setError(error['error'])
-      console.error('Error fetching data:', error);
+      setError('Unexpected error occurred')
+      setTrain([])
+      setMAE('')
+      setTest([])
     }
   };
   
@@ -117,16 +126,20 @@ export default function HeaderSect() {
       </div>
      
       <div className="algobar ">
-        <button className="section bg-blue-500 text-white " onClick={()=>fetchDataFromAl1(1)}>Algorithm 1</button>
-        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(2)}>Algorithm 2</button>
-        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(3)}>Algorithm 3</button>
+        <button className="section bg-blue-500 text-white " onClick={()=>fetchDataFromAl1(1)}>LSTM</button>
+        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(2)}>ARIMA</button>
+        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(3)}>SVM</button>
       </div>
 
-      <div className='algobar'>
+      
+      <div className='algobar' style={{ marginTop: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
+  {mae !== '' && <div style={{ marginBottom: '10px' }}>Mean Absolute Error: <b>{mae}</b></div>}
+  
   {algorithm > 0 && train.length > 0 && test.length > 0 && <PlotGraph train={train} test={test} />}
 
-  {error!='' &&  <span>{error}</span>}
-    </div>
+  {error !== '' && <span style={{ color: 'red' }}>{error}</span>}
+</div>
+
 
       
     </div>
