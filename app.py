@@ -187,22 +187,34 @@ def run_ARIMA(stock_id :int, day:int):
 
     start = 0
     end = len(train)
+    split = 50
 
-    arma_diff1 = ARIMA(train[start:end-4].diff(), order=(3, 0, 3)).fit()
-    forecast = arma_diff1.predict(end-4, end-1, dynamic=True)
-    test = train[start:end]
+    train = train.diff().dropna()
+
+    train_data, test_data = train[start:split], train[split:end]
+
+    app.logger.info("train_data length:")
+    app.logger.info(len(train_data))
+    app.logger.info("test_data length:")
+    app.logger.info(len(test_data))
+
+    arma_diff1 = ARIMA(train_data, order=(3, 0, 3)).fit()
+    forecast = arma_diff1.predict(split+2, end, dynamic=True)
+    #test = train[start:end]
     # mse = ((forecast.to_frame().predicted_mean - test.target) ** 2).mean()
-    mae = (forecast.to_frame().predicted_mean - test.target).abs().mean()
+    #mae = (forecast.to_frame().predicted_mean - test.target).abs().mean()
 
-    # app.logger.info("train data:")
-    # app.logger.info(type(test))
-    # app.logger.info("forecast type:")
-    # app.logger.info(type(forecast))
+    app.logger.info("forecast length:")
+    app.logger.info(len(forecast))
+
+    mae = mean_absolute_error(test_data, forecast)
+
+    
     # app.logger.info("forecast data:")
     # app.logger.info(forecast.to_frame().predicted_mean)
 
     response_data = {
-            'training': test['target'].tolist(),
+            'training': train_data['target'].tolist(),
             'testing': forecast.to_frame().predicted_mean.tolist(),
             'mae' : mae
         }
