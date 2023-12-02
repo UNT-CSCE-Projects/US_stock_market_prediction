@@ -170,7 +170,7 @@ def run_ARIMA(stock_id :int, day:int):
     """
 
     """
-    print(day+ " stock")
+
     if not (stock_id and day):
         return jsonify({'error': 'Invalid Input!! Stock number or Day should be equal to or greater than 1'}), 400
     
