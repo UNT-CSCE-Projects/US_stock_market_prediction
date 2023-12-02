@@ -10,7 +10,7 @@ import React, { useState,useEffect } from 'react';
 export default function HeaderSect() {
   const [stockId, setStockId] = useState('');
   const [day, setDay] = useState('');
-  const [algorithm, setAlgorithm] = useState(0); // Replace with your actual algorithm
+  const [algorithm, setAlgorithm] = useState(0); 
   const [train, setTrain] = useState([])
   const [test, setTest] = useState([])
   const [mae, setMAE] = useState('')
@@ -39,7 +39,7 @@ export default function HeaderSect() {
   }, [ algorithm]);
   const fetchData = async () => {
     try {
-        const response = await fetch(`http://127.0.0.1:5000/data?stock_id=${stockId}&day=${day}&algorithm=${algorithm}`);
+        const response = await fetch(`https://optiver-trading-at-the-close-e231d4080979.herokuapp.com/data?stock_id=${stockId}&day=${day}&algorithm=${algorithm}`);
         if (response.status===200) {
           const result = await response.json();
           
@@ -127,11 +127,10 @@ export default function HeaderSect() {
      
       <div className="algobar ">
         <button className="section bg-blue-500 text-white " onClick={()=>fetchDataFromAl1(1)}>LSTM</button>
-        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(2)}>ARIMA</button>
-        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(3)}>ARMA</button>
+        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(2)}>ARMA</button>
+        <button className="section bg-blue-500 text-white" onClick={()=>fetchDataFromAl1(3)}>Regression</button>
       </div>
 
-      
       <div className='algobar' style={{ marginTop: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
   {mae !== '' && <div style={{ marginBottom: '10px' }}>Mean Absolute Error: <b>{mae}</b></div>}
   
