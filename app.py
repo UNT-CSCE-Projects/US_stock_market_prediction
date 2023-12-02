@@ -19,7 +19,7 @@ CORS(app)
 
 
 #env_config = os.getenv('APP_SETTINGS', 'config.DevelopmentConfig')
-#app.config.from_object(env_config)
+#app.config.from_object(env_config)ß
 #secret_key = app.config.get('SECRET_KEY')
 
 @app.get('/')
