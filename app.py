@@ -148,7 +148,7 @@ def run_model(stock_id, day, algorithm):
 
             test_values = test_predict.tolist()
 
-            mae = mean_absolute_error(y_test, test_predict)
+            mae = mean_absolute_error(test_data, test_predict)
 
             response_data = {
                 'training': train_target_values,
