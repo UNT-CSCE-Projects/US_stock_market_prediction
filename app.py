@@ -1,5 +1,6 @@
 import os
 import pickle
+import gunicorn
 from flask import Flask, render_template, request, send_from_directory, jsonify
 from tensorflow.keras.optimizers.legacy import Adam as LegacyAdam
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
