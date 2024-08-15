@@ -37,7 +37,10 @@ To update requirements file after lib install, run:
 python3 -m pip freeze > requirements.txt
 ```
 
-
+Upgrade dedendencies:
+```
+cat requirements.txt | cut -f1 -d= | xargs pip install -U
+```
 
 
 ## References
